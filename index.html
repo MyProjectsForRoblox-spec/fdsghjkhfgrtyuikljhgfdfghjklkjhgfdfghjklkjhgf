@@ -71,11 +71,6 @@
       border: 1px solid var(--border);
       border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .search-button:hover {
-      background: var(--border);
     }
 
     .scripts-grid {
@@ -121,21 +116,45 @@
       margin-bottom: 8px;
     }
 
-    .copy-button {
-      width: 100%;
-      padding: 8px;
-      background: var(--light-bg);
-      color: var(--text-light);
+    /* Container for buttons */
+    .script-actions {
+      display: flex;
+      gap: 5px; /* Space between buttons */
+      margin-top: auto; /* Push buttons to the bottom */
+      justify-content: center; /* Center the buttons within the card */
+      padding-top: 10px; /* Add some space above the buttons */
+    }
+
+    /* Style for the image buttons */
+    .copy-button, .play-button {
+      width: 60px; /* Fixed width for the button */
+      height: 35px; /* Fixed height to accommodate the image and padding */
+      padding: 4px; /* Smaller padding */
+      background: #000000; /* Full black background */
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s;
-      margin-top: auto;
+      display: flex; /* Use flexbox to center the image */
+      justify-content: center;
+      align-items: center;
+      transition: background 0.3s ease; /* Smooth transition for background */
     }
 
-    .copy-button:hover {
-      background: var(--border);
+    .copy-button:hover, .play-button:hover {
+      background: #880808; /* Blood red background on hover */
     }
+
+    .copy-button img, .play-button img {
+        width: 18px; /* Set image width */
+        height: 18px; /* Set image height */
+        object-fit: contain; /* Ensure the image fits within the bounds */
+        opacity: 1; /* Set image opacity back to full */
+        /* Removed filter transition as hover is on background now */
+    }
+
+    /* Removed hover effect for the image */
+    /* .copy-button:hover img, .play-button:hover img { } */
+
 
     .loader {
       border: 4px solid var(--border);
@@ -188,11 +207,11 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: var(--dark-bg); /* Changed to --dark-bg */
+        background-color: var(--dark-bg);
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 10000; /* Ensure it's on top of everything */
+        z-index: 10000;
         transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
@@ -203,7 +222,7 @@
         border-top-color: #fff;
         border-radius: 50%;
         animation: spin 1.5s linear infinite;
-        position: relative; /* For inner circles */
+        position: relative;
     }
 
     .loading-spinner::before,
@@ -263,6 +282,8 @@
     ];
     let currentProxy = 0;
     const loadingOverlay = document.getElementById('loadingOverlay');
+    const copyImageUrl = 'https://github.com/MyProjectsForRoblox-spec/fdsghjkhfgrtyuikljhgfdfghjklkjhgfdfghjklkjhgf/blob/main/Dark%20Script%20Hub_files/copy.png?raw=true'; // Define copy image URL
+    const playImageUrl = 'https://github.com/MyProjectsForRoblox-spec/fdsghjkhfgrtyuikljhgfdfghjklkjhgfdfghjklkjhgf/blob/main/Dark%20Script%20Hub_files/play-button-arrowhead.png?raw=true'; // Define play image URL
 
     function showLoading() {
         loadingOverlay.style.opacity = '1';
@@ -336,7 +357,14 @@
               <h3 class="script-title">${script.title}</h3>
               <p class="script-info">${script.game?.name || 'No game specified'}</p>
               <p class="script-info">Views: ${script.views?.toLocaleString() || 'N/A'}</p>
-              <button class="copy-button" data-index="${scriptsData.length - newScripts.length + index}">Copy Script</button>
+              <div class="script-actions">
+                <button class="copy-button" data-index="${scriptsData.length - newScripts.length + index}">
+                  <img src="${copyImageUrl}" alt="Copy Script">
+                </button>
+                <button class="play-button" data-index="${scriptsData.length - newScripts.length + index}">
+                  <img src="${playImageUrl}" alt="Play Script">
+                </button>
+              </div>
             </div>
           `;
           container.appendChild(card);
@@ -344,6 +372,11 @@
 
         document.querySelectorAll('.copy-button').forEach(btn => {
           btn.onclick = handleCopy;
+        });
+
+        // Attach event listener for the new play button (no function yet)
+        document.querySelectorAll('.play-button').forEach(btn => {
+          btn.onclick = () => showMessage('Play functionality coming soon!', true);
         });
 
         updatePageIndicator();
@@ -366,7 +399,13 @@
     }
 
     function handleCopy(event) {
-      const index = event.target.dataset.index;
+      // The event.target might be the image, so we need to find the button parent
+      const button = event.target.closest('.copy-button');
+      if (!button) {
+          showMessage('Copy button not found', false);
+          return;
+      }
+      const index = button.dataset.index;
       const script = scriptsData[index]?.script;
 
       if (!script) {
